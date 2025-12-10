@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { War } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const getWarContext = async (war: War): Promise<string> => {
   try {

@@ -33,6 +33,10 @@
         }
       }
     </script>
+    <script>
+      // Polyfill process for browser environments (Vercel deployments) to prevent "process is not defined" errors
+      window.process = window.process || { env: {} };
+    </script>
     <style>
       body {
         background-color: #121213;
