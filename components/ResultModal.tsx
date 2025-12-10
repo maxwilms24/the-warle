@@ -37,7 +37,7 @@ const ResultModal: React.FC<ResultModalProps> = ({ status, war, guesses, onClose
         return '⬛';
     }).join('');
     
-    const text = `The Warle ${new Date().toISOString().slice(0, 10)}\nGuesses: ${guessCount}/${MAX_GUESSES}\nAccuracy: ${accuracy}%\n${squares}\nhttps://thewarle.com`;
+    const text = `The Warle ${new Date().toISOString().slice(0, 10)}\nGuesses: ${guessCount}/${MAX_GUESSES}\nAccuracy: ${accuracy}%\n${squares}\nhttps://the-warle.vercel.app`;
     
     navigator.clipboard.writeText(text).then(() => {
         setCopied(true);
