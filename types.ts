@@ -4,6 +4,7 @@ export interface War {
   years: string;
   deaths: number; // The target number
   description: string;
+  imageUrl: string;
 }
 
 export interface Guess {

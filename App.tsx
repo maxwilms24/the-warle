@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { HelpCircle, BarChart2, ShieldAlert, ImageIcon } from 'lucide-react';
-import { WARS, MAX_GUESSES, WIN_MARGIN } from './constants';
+import { HelpCircle, BarChart2, ImageIcon } from 'lucide-react';
+import { MAX_GUESSES, WIN_MARGIN } from './constants';
 import { getDailyWar, calculateAccuracy } from './utils';
 import { War, Guess, GameStatus, DailyStats } from './types';
-import { getHint, getDailyContent } from './services/geminiService';
 import GuessRow from './components/GuessRow';
 import ResultModal from './components/ResultModal';
 import InfoModal from './components/InfoModal';
 import StatsModal from './components/StatsModal';
-
-interface DailyContent {
-    image: string | null;
-}
 
 function App() {
   const [targetWar, setTargetWar] = useState<War | null>(null);
@@ -21,9 +16,6 @@ function App() {
   const [showResult, setShowResult] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showStats, setShowStats] = useState(false);
-  const [hint, setHint] = useState<string | null>(null);
-  const [loadingHint, setLoadingHint] = useState(false);
-  const [dailyImage, setDailyImage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,23 +36,6 @@ function App() {
         }
     } else {
         setShowInfo(true); // Show info for new game/day
-    }
-
-    // Load or Fetch Daily Image
-    // Key version bumped to ensure we don't try to parse old JSON objects as strings
-    const imageKey = `warle_image_v3_${today}_${dailyWar.id}`;
-    const savedImage = localStorage.getItem(imageKey);
-    
-    if (savedImage) {
-        setDailyImage(savedImage);
-    } else {
-        getDailyContent(dailyWar).then(content => {
-            const imgStr = content.image || '';
-            setDailyImage(imgStr);
-            if (imgStr) {
-                localStorage.setItem(imageKey, imgStr);
-            }
-        });
     }
   }, []);
 
@@ -180,15 +155,6 @@ function App() {
     }));
   };
 
-  const fetchHint = async () => {
-    if (!targetWar || guesses.length === 0) return;
-    setLoadingHint(true);
-    const lastGuess = guesses[guesses.length - 1];
-    const hintText = await getHint(targetWar, lastGuess.value);
-    setHint(hintText);
-    setLoadingHint(false);
-  };
-
   if (!targetWar) return <div className="h-screen bg-[#121213] flex items-center justify-center text-white">Loading Operation...</div>;
 
   return (
@@ -216,19 +182,19 @@ function App() {
             </div>
 
             <div className="w-full flex flex-col gap-4">
-                {dailyImage ? (
+                {targetWar.imageUrl ? (
                     <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-war-gray shadow-lg shadow-black/50 group">
                         <img 
-                            src={dailyImage} 
+                            src={targetWar.imageUrl} 
                             alt={targetWar.name} 
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                          <div className="absolute inset-0 bg-gradient-to-t from-[#121213] via-transparent to-transparent opacity-30 pointer-events-none"></div>
                     </div>
                 ) : (
-                    <div className="w-full aspect-video bg-war-gray/10 rounded-lg border border-war-gray/30 flex flex-col items-center justify-center animate-pulse gap-3">
+                    <div className="w-full aspect-video bg-war-gray/10 rounded-lg border border-war-gray/30 flex flex-col items-center justify-center gap-3">
                         <ImageIcon className="w-8 h-8 text-gray-600" />
-                        <span className="text-xs text-gray-500 uppercase tracking-widest">Generating Intel...</span>
+                        <span className="text-xs text-gray-500 uppercase tracking-widest">No Intel Available</span>
                     </div>
                 )}
 
@@ -250,25 +216,6 @@ function App() {
                 <GuessRow key={`empty-${i}`} />
             ))}
         </div>
-
-        {/* Hint Section - Only if playing and made at least 1 wrong guess */}
-        {gameStatus === GameStatus.PLAYING && guesses.length > 0 && !hint && (
-            <div className="flex justify-center mb-4">
-                <button 
-                    onClick={fetchHint} 
-                    disabled={loadingHint}
-                    className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
-                >
-                    <ShieldAlert className="w-4 h-4" />
-                    {loadingHint ? "Decrypting intel..." : "Request Intel (AI Hint)"}
-                </button>
-            </div>
-        )}
-        {hint && (
-            <div className="mb-4 bg-purple-900/20 border border-purple-500/30 p-3 rounded text-sm text-purple-200 text-center animate-in fade-in slide-in-from-bottom-2">
-                <span className="font-bold mr-2">INTEL:</span> {hint}
-            </div>
-        )}
 
         {/* Input Area */}
         <div className="mb-8">

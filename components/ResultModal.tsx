@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { X, Share2, Award, Skull, Check } from 'lucide-react';
 import { War, GameStatus, Guess } from '../types';
 import { formatNumber } from '../utils';
-import { getWarContext } from '../services/geminiService';
 import { MAX_GUESSES } from '../constants';
 
 interface ResultModalProps {
@@ -13,16 +12,7 @@ interface ResultModalProps {
 }
 
 const ResultModal: React.FC<ResultModalProps> = ({ status, war, guesses, onClose }) => {
-  const [context, setContext] = useState<string>('Loading historical context...');
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const fetchContext = async () => {
-      const text = await getWarContext(war);
-      setContext(text);
-    };
-    fetchContext();
-  }, [war]);
 
   const handleShare = () => {
     const isWin = status === GameStatus.WON;
@@ -102,10 +92,10 @@ const ResultModal: React.FC<ResultModalProps> = ({ status, war, guesses, onClose
 
         <div className="mb-6">
             <h4 className="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                <span>🤖</span> AI Historical Briefing
+                <span>📜</span> Historical Briefing
             </h4>
-            <div className="text-sm text-gray-400 italic bg-black/30 p-3 rounded border-l-2 border-purple-500">
-                {context}
+            <div className="text-sm text-gray-400 italic bg-black/30 p-3 rounded border-l-2 border-war-gray">
+                {war.description}
             </div>
         </div>
 
